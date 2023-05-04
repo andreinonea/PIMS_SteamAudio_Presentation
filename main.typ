@@ -5,7 +5,7 @@
 
 // Enable dark mode
 #set page(fill: rgb("012345"))
-#set text(12pt, fill: rgb("aaa"))
+#set text(12pt, fill: rgb("aaa"), font: "Times New Roman")
 
 
 
@@ -18,37 +18,49 @@
 
 // Page margins
 #set page(margin: (
-    x: 10%,
-    y: 15%,
+    x: 5%,
+    top: 20%,
+    bottom: 15%
   )
 )
+
+// Page numbering
+#set page(numbering: "1")
 
 // Page header and footer
 #set page(
   header: [
-    #set text(10pt, fill: rgb("fff"))
-    Introduction #h(1fr) #pad(left: 80%, image(
+    #grid(
+      columns: (1fr, 1fr),
+      align(horizon + left)[
+        #set text(16pt, fill: rgb("fff"))
+        #smallcaps("Introduction")
+      ],
+      align(horizon + right, image(
         "static/steam-audio-logo.png",
-        width: 100%,
-        height: 60%,
+        width: 30%,
+        height: 50%,
         fit: "contain",
       ))
+    )
   ],
   footer: [
-    #set text(10pt, fill: rgb("fff"))
-    \@ 2023 Andrei N. Onea #h(1fr) PIMS PRESENTATION | 13
-  ]
+    #set text(8pt, fill: rgb("fff"))
+    \@ 2023 Andrei N. Onea #h(1fr) PIMS PRESENTATION #text(14pt)[*| #counter(page).display()*]
+  ],
+  header-ascent: 50%,
+  footer-descent: 42%,
 ) 
 
 // Background image taken from SteamAudio
-/*#set page(
+#set page(
   background: image(
     "static/steam-audio-landing-background3_150pct_cropped.png",
     width: 100%,
     height: 100%,
     fit: "cover",
   )
-)*/
+)
 
 = Introduction 2
 
