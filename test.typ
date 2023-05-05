@@ -2,8 +2,46 @@
 #let s_ptitle = state("presentation_title", "Welcome to ATA!")
 #let s_pdate = state("presentation_date", none)
 #let s_pauthor = state("presentation_author", none)
+#let s_pevent = state("presentation_event", none)
 #let s_pformat = state("presentation_format", "presentation-4-3")
+#let s_pnumbers = state("presentation_numbers", false)
+#let s_pnumbers_outof = state("presentation_numbers_outof", false)
 
+
+/*  Set global configuration options for the presentation.
+    Please go to `slide` definition below for details about these.
+*/
+#let presentation(
+  date: none,
+  author: none,
+  event: none,
+  format: none,
+  bg_image: none,
+  header_image: none,
+  numbers: none,
+) = {
+  if date != none { s_pdate.update(date) }
+  if author != none { s_pauthor.update(author) }
+  if event != none { s_pevent.update(event) }
+  if format != none { s_pformat.update(format) }
+  if numbers != none {
+    let numberstype = type(numbers)
+    if numberstype not in ("boolean", "dictionary") {
+      panic("`numbers` must be boolean or dictionary: found " + numberstype + ".")
+    }
+    if numberstype == "dictionary" {
+      if "outof" in numbers {
+        s_pnumbers_outof.update(numbers.outof)
+      }
+      s_pnumbers.update(true)
+    } else {
+      s_pnumbers.update(numbers)
+    }
+  }
+}
+
+
+/*  Main slide function to create slides. */
 #let slide(
   /*  Slide title.
 
@@ -19,16 +57,32 @@
   */
   title: none,
 
+  /*  Slide author.
+
+      Can be set globally through `#presentation`.
+  */
+  author: none,
+
   /*  Insert as break slide to move to a new section in the presentation.
 
-      `br` can also be a dict with any of the following options:
-          align: center + horizon
-          size: 42pt
-          fill: rgb("000")
-      When an option is present in the dict, it overwrites the default
-      value above. Note that `br` being a dict is ecquivalent to `true`.
+      `br` can also be a dict with any of the following overwritable options:
+          align: center + horizon    sets where to place the title
+          size: 42pt                 sets the size of the title
+          fill: rgb("000")           sets the color of the title
+      Note that `br` being a dict is equivalent to `true`.
   */
   br: false,
+
+  /*  Display slide numbers.
+
+      Can be set globally through '#presentation'.
+
+      `numbers` is a boolean, but can also be a dict with the following overwritable option:
+          outof: false    if `false`, uses "1,2,3" numbering
+                          if `true`, uses "1/3,2/3,3/3" numbering
+      Note that `numbers` being a dict is equivalent to `true`.
+  */
+  numbers: none,
 
   /*  Content of the slide.
 
@@ -39,8 +93,33 @@
   */
   body
 ) = {
-  /*  Ensure each slide sits on its own page, leaving no empty pages. */
-  pagebreak(weak: true)
+  /*  Check that `numbers` is valid. */
+  let numberstype = type(numbers)
+  if numberstype not in ("boolean", "dictionary", "none") {
+    panic("`numbers` must be boolean or dictionary: found " + numberstype + ".")
+  }
+
+  // TODO:
+  locate(loc => {
+    let numbers_active = s_pnumbers.at(loc)
+    let numbers_outof = s_pnumbers_outof.at(loc)
+    if numbers != none {
+      let numbers_is_dict = numberstype == "dictionary"
+      if numbers_is_dict {
+        numbers_active = true
+        numbers_outof = if "outof" in numbers { numbers.outof }
+      } else {
+        numbers_active = numbers
+      }
+    }
+    if not numbers_active {
+      return
+    }
+    block()[
+      #counter(page).display()
+      #if numbers_outof { [\/ #counter(page).final(loc).first()] }
+    ]
+  })
 
   /*  Check that `br` is valid. */
   let brtype = type(br)
@@ -70,6 +149,9 @@
 
     /*  Save `title` for future slides, until a new break slide is met. */
     s_ptitle.update(title)
+
+    /*  Ensure each slide sits on its own page, leaving no empty pages. */
+    pagebreak(weak: true)
     return
   }
  
@@ -79,8 +161,27 @@
   if title == none { s_ptitle.display() } else { title }
   
   block(body)
+
+
+  // DEBUG
+  block(if author == none { s_pauthor.display() } else { author })
+
+  /*  Ensure each slide sits on its own page, leaving no empty pages. */
+  pagebreak(weak: true)
   return
 }
+
+//-=-=-=-==--=-=-=-=-==-=-=-=-=-=--==-=-=-=-=-=--
+
+
+#presentation(
+  date: "2023",
+  author: "Andrei N. Onea",
+  event: "PIMS PRESENTATION",
+  format: "presentation-16-9",
+  numbers: (outof: true),
+)
+
 
 #slide(title: none, br: true)[]
 #slide(title: [Caca], br: true)[]
@@ -93,7 +194,9 @@
   ]
 ]
 #slide(title: "Introduction", br: true)[]
-#slide()[music nver stops]
-#slide(title: "")[music nver stops]
-#slide(title: [])[music nver stops]
-#slide(title: "A new chapter")[Text goes here]
+#slide()[1 music nver stops]
+#presentation(author: "caca")
+#slide(title: "")[2 music nver stops]
+#presentation(author: "pipilica")
+#slide(title: [])[4 music nver stops]
+#slide(title: "A new chapter")[Text goes here #counter(page).display()]
