@@ -1,4 +1,8 @@
-#let p_title = state("presentation_title", none)
+/*  Static presentation state variables. */
+#let s_ptitle = state("presentation_title", "Welcome to ATA!")
+#let s_pdate = state("presentation_date", none)
+#let s_pauthor = state("presentation_author", none)
+#let s_pformat = state("presentation_format", "presentation-4-3")
 
 #let slide(
   /*  Slide title.
@@ -46,31 +50,41 @@
   let br_is_dict = brtype == "dictionary"
 
   if br_is_dict or br {
-    /*  Use title as body for break slides. */
-    if body == none or body == [] { body = title }
-
     /*  Deconstruct `br` if given as dict. */
     let br_align = if br_is_dict and "align" in br { br.align } else { center + horizon }
     let br_size = if br_is_dict and "size" in br { br.size } else { 42pt }
     let br_fill = if br_is_dict and "fill" in br { br.fill } else { rgb("000") }
 
+    /*  If `body` is missing, use `title` instead. */
+    if body == [] {
+      /*  In case the first slide title is `none`, use a placeholder static title.
+          Be aware that, as a result, whenever `title == none and br == true`,
+          the previous title will be used for break slides.
+          This should not happen often, unless specifically desired.
+      */
+      body = if title == none { s_ptitle.display() } else { title }
+    }
+
     /*  Paint break slide body. */
     align(br_align, text(size: br_size, fill: br_fill, body))
 
     /*  Save `title` for future slides, until a new break slide is met. */
-    p_title.update(title)
+    s_ptitle.update(title)
     return
   }
  
   /*  If `title` is missing, use saved `title`.
       If you want to avoid this behavior, but still keep the title saved,
       simply make `title` empty - `title: ""` or `title: []`. */
-  if title == none { p_title.display() } else { title }
+  if title == none { s_ptitle.display() } else { title }
   
   block(body)
   return
 }
 
+#slide(title: none, br: true)[]
+#slide(title: [Caca], br: true)[]
+#slide(title: none, br: true)[]
 #slide(title: [Hello \ Pipi], br: (size: 80pt))[
   #align(horizon)[
     #underline(text(size: 22pt, "Se schimba titlul"))
