@@ -1,0 +1,37 @@
+#set remember_title = false
+#set pagebreak = false
+
+#slide(title: "first", remember_title: true, pagebreak: true) // first until next pagebreak
+#slide() [content] // first
+#slide() [content] // first
+#slide(title: "second", remember_title: true, pagebreak: false) // overwrites first->second until next pagebreak
+#slide() [content] // second 
+#slide() [content] // second
+#slide(title: "third", remember_title: false, pagebreak: true)
+#slide(title: "third.1", ) [content] // 
+#slide() [content]
+#slide(title: "forth", remember_title: true, pagebreak: true)
+#slide() [content]
+#slide() [content]
+
+
+
+_title
+
+func(title)
+{
+	if remember_title:
+		save(title)
+
+	if page_break:
+		del(title)
+
+	use(gettitle())
+}
+
+
+---------------
+page_break = false
+
+
+#slide(title: [Steam Audio], pagebreak: true)
