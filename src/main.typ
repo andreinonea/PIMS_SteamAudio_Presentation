@@ -1,6 +1,6 @@
-#import "templates/slide.typ": slide
+#import "templates/slide.typ": presentation, slide
 
-#set slide(
+#presentation(
   date: "2023",
   author: "Andrei N. Onea",
   event: "PIMS PRESENTATION",
@@ -21,6 +21,7 @@
 
 
 #slide(title: [Steam Audio], page_break: true)
-#slide
-#include "01_Introduction.typ"
-#slide(title: [Thank you! Questions?], page_break: true)
+#slide(title: [Ce este Steam Audio?], page_break: true)
+#slide(title: [Ce este Steam Audio?]) [#include "01_Introduction.typ"]
+#slide(title: [Mulțumesc pentru atenție!], page_break: true)
+#slide(title: [Întrebări], page_break: true)
