@@ -57,7 +57,6 @@
 
 #let atatheme_rest(body, ..extras) = {
   let extras = extras.named()
-  if body == [] {} else {}
 
   set text(
     size: if "size" in extras { extras.size } else { 12pt },
@@ -65,7 +64,7 @@
     font: if "font" in extras { extras.font } else { "Times New Roman" },
   )
 
-  body
+  if body == [] [Welcome to ATA!] else [#body]
 }
 
 #let atatheme_extras = (
@@ -257,13 +256,25 @@
   numbers: (outof: true),
 )
 
+/* Tests for break slides */
+#slide(br: true) // expect welcome to ata from atatheme
+#slide(title: "", br: true) // expect empty slide
+#slide(title: none, br: true) // expect welcome to ata from atatheme (same as first test)
+#slide(title: [Caca din titlu], br: true) // expect caca din titlu
+#slide(title: none, br: true, body: [Caca din body]) // expect caca din body
+#slide(title: [Caca din titlu desi ambele], br: true, body: [Caca din body desi ambele]) // expect caca din body
 
-#slide(br: true)
-#slide(title: "", br: true)
-#slide(title: none, br: true)
-#slide(title: [Caca din titlu], br: true)
-#slide(title: none, br: true, body: [Caca din body])
-#slide(title: [Caca din titlu desi ambele], br: true, body: [Caca din body desi ambele])
+/* Tests for break slides */
+#slide(br: false) // expect welcome to ata from atatheme in body
+#slide(title: "") // expect the same.
+#slide(title: none) // same as first
+#slide(title: [Caca din titlu]) // expect caca din titlu in header
+#slide(title: none, body: [Caca din body]) // expect caca din body in body
+#slide(title: [Caca din titlu desi ambele], body: [Caca din body desi ambele]) // expect caca din titlu in header and caca din body in body
+
+
+/* Random stuff for now */
+#let slide = slide.with(bg_color: rgb("fed"))
 
 #slide(title: [Hello \ Pipi], br: true, body: [
   #align(horizon)[
@@ -283,16 +294,22 @@
 #slide(title: [], body: [4 music nver stops])
 
 
-#slide(title: "A new chapter", bg_color: rgb("fed"), body: [
-  Text goes here #counter(page).display()
+#slide(
+  title: "A new chapter",
+  bg_color: rgb("fed"),
+  header: [
+    Caca
+  ],
+  body: [
+    Text goes here #counter(page).display()
 
-  #let arr = ([1],[2],[3],[4],[5])
+    #let arr = ([1],[2],[3],[4],[5])
 
-  #grid(
-    columns: (1fr,) * (arr.len() - 1),
-    column-gutter: 20em,
-    row-gutter: 2em,
-    ..arr
-  )
-
-])
+    #grid(
+      columns: (1fr,) * (arr.len() - 1),
+      column-gutter: 20em,
+      row-gutter: 2em,
+      ..arr
+    )
+  ]
+)
