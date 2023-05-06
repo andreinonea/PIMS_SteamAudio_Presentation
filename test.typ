@@ -1,6 +1,5 @@
 #let atatheme_br(body, ..extras) = {
   let extras = extras.named()
-  if body == [] {} else {}
 
   set text(
     size: if "size" in extras { extras.size } else { 42pt },
@@ -10,7 +9,7 @@
 
   align(
     if "align" in extras { extras.align } else { center + horizon },
-    body
+    if body == [] [Welcome to ATA!] else [#body]
   )
 }
 
@@ -23,6 +22,7 @@
     font: if "font" in extras { extras.font } else { "Times New Roman" },
   )
 
+  // TODO: grid
   if body == [] [
     #grid(
       columns: (1fr, 1fr),
@@ -47,6 +47,7 @@
     font: if "font" in extras { extras.font } else { "Times New Roman" },
   )
 
+  // TODO: numbers
   if body == [] [
     \@ #extras.date #extras.author #h(1fr) #extras.event #text(14pt)[*| #counter(page).display("1 / 1", both: true)*]
   ] else [
@@ -87,11 +88,10 @@
 #let slide(
   /*  Slide title.
 
-      If `br` is `true`, appears enlarged and centered, and
-                         is overriden by `body`, if present.
-      If `br` is `false`, appears in the header, top-left.
+      Setting `title` to `""` when `body` is also empty has the
+      effect of pushing a blank slide.
   */
-  title: "Welcome to ATA!",
+  title: none,
 
   /*  Slide header `content`.
 
@@ -179,7 +179,7 @@
 ) = {
   /*  Make some necessary verifications for custom parameters. */
   if type(padding) != "dictionary" {
-    panic("`numbers` must be dictionary: found " + type(numbers))
+    panic("`padding` must be dictionary: found " + type(padding))
   } else {
     if "header" in padding and type(padding.header) not in ("ratio", "length", "relative length") {
       panic("`padding.header` must be a relative length: found " + type(padding.header))
@@ -259,6 +259,7 @@
 
 
 #slide(br: true)
+#slide(title: "", br: true)
 #slide(title: none, br: true)
 #slide(title: [Caca din titlu], br: true)
 #slide(title: none, br: true, body: [Caca din body])
@@ -287,27 +288,11 @@
 
   #let arr = ([1],[2],[3],[4],[5])
 
-
   #grid(
     columns: (1fr,) * (arr.len() - 1),
     column-gutter: 20em,
     row-gutter: 2em,
     ..arr
   )
-
-  #type(0.3%)
-  #type(3em)
-  #type(0.3% + 3em)
-
-  #type(atatheme)
-  #type(atatheme.br)
-  #atatheme.at("br")([text])
-
-  #let func(..extras) = {
-    let extras = extras.named()
-    extras.a
-  }
-  #let func2 = func.with(a: true)
-  #func2()
 
 ])
