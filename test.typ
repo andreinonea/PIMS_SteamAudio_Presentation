@@ -70,6 +70,22 @@
   */
   bg_image: none,
 
+  /*  Margins of the slide.
+
+      Must be type `dict` documented at:
+      https://typst.app/docs/reference/layout/page/#parameters--margin
+      Default: 0%.
+  */
+  margin: (:),
+
+  /*  Paddings of the header and footer.
+
+      Must be type `dict` with the following keys: `header`, `footer`.
+      Values must be `relative length`: https://typst.app/docs/reference/types/relative-length
+      Default: 30%.
+  */
+  padding: (header: 30%, footer: 30%),
+
   /*  Display slide numbers.
 
       `numbers` is a boolean, but can also be a dict with the following overwritable option:
@@ -91,6 +107,16 @@
   body
 ) = {
   /*  Make some necessary verifications for custom parameters. */
+  if type(padding) != "dictionary" {
+    panic("`numbers` must be dictionary: found " + type(numbers))
+  } else {
+    if "header" in padding and type(padding.header) not in ("ratio", "length", "relative length") {
+      panic("`padding.header` must be a relative length: found " + type(padding.header))
+    }
+    if "footer" in padding and type(padding.footer) not in ("ratio", "length", "relative length") {
+      panic("`padding.footer` must be a relative length: found " + type(padding.footer))
+    }
+  }
   if type(numbers) not in ("boolean", "dictionary") {
     panic("`numbers` must be boolean or dictionary: found " + type(numbers))
   }
@@ -106,6 +132,31 @@
     paper: format,
     fill: bg_color,
     background: bg_image,
+    margin: margin,
+    // header: [
+    //   #grid(
+    //     columns: (1fr, 1fr),
+    //     if page_break { none } else {
+    //       align(horizon + left)[
+    //         #set text(20pt, fill: rgb("fff"))
+    //         #smallcaps(title)
+    //       ]
+    //     },
+    //     align(horizon + right, header_image)
+    //   )
+    // ],
+    // footer: [
+    //   #set text(8pt, fill: rgb("fff"))
+    //   \@ #date #author #h(1fr) #event) #text(14pt)[*| #counter(page).display("1")*]
+    // ],
+    header: [
+      PIPI MIKI
+    ],
+    footer: [
+      CACA MAKA
+    ],
+    header-ascent: if "header" in padding { padding.header } else { 0% },
+    footer-descent: if "footer" in padding { padding.footer } else { 0% },
   )
 
   _get_page_numbering(numbers)
@@ -154,9 +205,22 @@
   //   height: 100%,
   //   fit: "cover",
   // ),
+  // header_image: image(
+  //   "static/steam-audio-logo.png",
+  //   width: 30%,
+  //   height: 50%,
+  //   fit: "contain",
+  // ),
+  margin: (x: 5%, top: 20%, bottom: 15%),
+  padding: (header: 50%, footer: 42%),
   numbers: (outof: true),
 )
 
+
+#show slide.where(br: true): it => [
+  #set text(100pt)
+  #it.body
+]
 
 #slide(br: true)[]
 #slide(title: none, br: true)[]
@@ -180,4 +244,25 @@
 #let slide = slide.with(author: "pipilica")
 
 #slide(title: [])[4 music nver stops]
-#slide(title: "A new chapter", bg_color: rgb("fed"))[Text goes here #counter(page).display()]
+
+
+#slide(title: "A new chapter", bg_color: rgb("fed"))[
+  Text goes here #counter(page).display()
+
+  #let arr = ([1],[2],[3],[4],[5])
+
+
+  #grid(
+    columns: (1fr,) * (arr.len() - 1),
+    column-gutter: 20em,
+    row-gutter: 2em,
+    ..arr
+  )
+
+  #type(0.3%)
+  #type(3em)
+  #type(0.3% + 3em)
+
+]
+
+abc
