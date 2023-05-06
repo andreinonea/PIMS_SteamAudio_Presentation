@@ -1,23 +1,86 @@
-/*  Get the content to display for the slide numbers.
-    Turn to the `numbers` parameter of `#slide` for detailed information.
-*/
-#let _get_page_numbering(numbers) = {
-  locate(loc => {
-    let numbers_active = numbers
-    let numbers_outof = false
-    let numbers_is_dict = type(numbers) == "dictionary"
-    if type(numbers) == "dictionary" {
-      numbers_active = true
-      if "outof" in numbers { numbers_outof = numbers.outof }
-    }
-    if numbers_active {
-      block()[
-        #counter(page).display()
-        #if numbers_outof { [\/ #counter(page).final(loc).first()] }
-      ]
-    }
-  })
+#let atatheme_br(body, ..extras) = {
+  let extras = extras.named()
+  if body == [] {} else {}
+
+  set text(
+    size: if "size" in extras { extras.size } else { 42pt },
+    fill: if "fill" in extras { extras.fill } else { rgb("000") },
+    font: if "font" in extras { extras.font } else { "Times New Roman" },
+  )
+
+  align(
+    if "align" in extras { extras.align } else { center + horizon },
+    body
+  )
 }
+
+#let atatheme_header(body, ..extras) = {
+  let extras = extras.named()
+
+  set text(
+    size: if "size" in extras { extras.size } else { 20pt },
+    fill: if "fill" in extras { extras.fill } else { rgb("000") },
+    font: if "font" in extras { extras.font } else { "Times New Roman" },
+  )
+
+  if body == [] [
+    #grid(
+      columns: (1fr, 1fr),
+      if extras.br { none } else {
+        align(horizon + left)[
+          #smallcaps(extras.title)
+        ]
+      },
+      //align(horizon + right, extra.image)
+    )
+  ] else [
+    #body
+  ]
+}
+
+#let atatheme_footer(body, ..extras) = {
+  let extras = extras.named()
+
+  set text(
+    size: if "size" in extras { extras.size } else { 8pt },
+    fill: if "fill" in extras { extras.fill } else { rgb("000") },
+    font: if "font" in extras { extras.font } else { "Times New Roman" },
+  )
+
+  if body == [] [
+    \@ #extras.date #extras.author #h(1fr) #extras.event #text(14pt)[*| #counter(page).display("1 / 1", both: true)*]
+  ] else [
+    #body
+  ]
+}
+
+#let atatheme_rest(body, ..extras) = {
+  let extras = extras.named()
+  if body == [] {} else {}
+
+  set text(
+    size: if "size" in extras { extras.size } else { 12pt },
+    fill: if "fill" in extras { extras.fill } else { rgb("aaa") },
+    font: if "font" in extras { extras.font } else { "Times New Roman" },
+  )
+
+  body
+}
+
+#let atatheme_extras = (
+  br: (:),
+  header: (:),
+  footer: (:),
+  rest: (:),
+)
+
+#let atatheme = (
+  br: atatheme_br,
+  header: atatheme_header,
+  footer: atatheme_footer,
+  rest: atatheme_rest,
+  extras: atatheme_extras
+)
 
 
 /*  Main slide function to create slides. */
@@ -30,13 +93,21 @@
   */
   title: "Welcome to ATA!",
 
-  /*  Insert as break slide to move to a new section in the presentation.
+  /*  Slide header `content`.
 
-      `br` can also be a dict with any of the following overwritable options:
-          align: center + horizon    sets where to place the title
-          size: 42pt                 sets the size of the title
-          fill: rgb("000")           sets the color of the title
-      Note that `br` being a dict is equivalent to `true`.
+      Themes may build a header function based on the readily available data,
+      such as `author`, `date`, `event` etc. Setting `header` here will override it.
+  */
+  header: [],
+
+  /*  Slide footer `content`.
+
+      Themes may build a footer function based on the readily available data,
+      such as `author`, `date`, `event` etc. Setting `footer` here will override it.
+  */
+  footer: [],
+
+  /*  Turn this slide into a page break for a transition to a new section in the presentation.
   */
   br: false,
 
@@ -86,25 +157,25 @@
   */
   padding: (header: 30%, footer: 30%),
 
-  /*  Display slide numbers.
+  /*  Controls display of slide numbers.
 
-      `numbers` is a boolean, but can also be a dict with the following overwritable option:
-          outof: false    if `false`, uses "1,2,3" numbering
-                          if `true`, uses "1/3,2/3,3/3" numbering
-      Note that `numbers` being a dict is equivalent to `true`.
+      If `numbers.format` is a valid numbering scheme, then numbering is enabled.
+      If `numbers.both` is `true`, the total number of slides will also be shown.
+      More details at: https://typst.app/docs/reference/layout/page/#parameters--footer
   */
-  numbers: false,
+  numbers: (format: "", both: false),
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+  theme: atatheme,
+
   /*  Content of the slide.
 
-      Must be present, even if left empty: [].
       If `br` is `true` and `body` is not empty, `title` is ignored.
       Any text customizations made in `body` overwrite those in `br` when used as dict,
       except for `align` - this should always be set using `br: (align: ...)`.
   */
-  body
+  body: []
 ) = {
   /*  Make some necessary verifications for custom parameters. */
   if type(padding) != "dictionary" {
@@ -117,15 +188,21 @@
       panic("`padding.footer` must be a relative length: found " + type(padding.footer))
     }
   }
-  if type(numbers) not in ("boolean", "dictionary") {
-    panic("`numbers` must be boolean or dictionary: found " + type(numbers))
-  }
-  if type(br) not in ("boolean", "dictionary") {
-    panic("`br` must be boolean or dictionary: found " + type(br))
+  if type(numbers) != "dictionary" {
+    panic("`numbers` must be a dictionary: found " + type(numbers))
   }
 
   /*  Ensure each slide sits on its own page, leaving no empty pages. */
   pagebreak(weak: true)
+
+  /*  Collect default extras to be joined with function specific ones later. */
+  let default_extras = (
+    title: title,
+    author: author,
+    date: date,
+    event: event,
+    br: br,
+  )
 
   /*  Set page options. */
   set page(
@@ -133,61 +210,25 @@
     fill: bg_color,
     background: bg_image,
     margin: margin,
-    // header: [
-    //   #grid(
-    //     columns: (1fr, 1fr),
-    //     if page_break { none } else {
-    //       align(horizon + left)[
-    //         #set text(20pt, fill: rgb("fff"))
-    //         #smallcaps(title)
-    //       ]
-    //     },
-    //     align(horizon + right, header_image)
-    //   )
-    // ],
-    // footer: [
-    //   #set text(8pt, fill: rgb("fff"))
-    //   \@ #date #author #h(1fr) #event) #text(14pt)[*| #counter(page).display("1")*]
-    // ],
-    header: [
-      PIPI MIKI
-    ],
-    footer: [
-      CACA MAKA
-    ],
+    header: theme.at("header")(header, ..default_extras + theme.extras.at("header")),
+    footer: theme.at("footer")(footer, ..default_extras + theme.extras.at("footer")),
     header-ascent: if "header" in padding { padding.header } else { 0% },
     footer-descent: if "footer" in padding { padding.footer } else { 0% },
   )
 
-  _get_page_numbering(numbers)
+  /*  Paint slide. */
+  let brush = "rest"
 
   /*  If we are on a break slide */
-  if type(br) == "dictionary" or br {
-    /*  Set default values */
-    let br_align = center + horizon
-    let br_size = 42pt
-    let br_fill = rgb("000")
-
-    /*  Deconstruct `br` if given as dict. */
-    if type(br) == "dictionary" {
-      if "align" in br { br_align = br.align }
-      if "size" in br { br_size = br.size }
-      if "fill" in br { br_fill = br.fill }
-    }
-
+  if br {
     /*  If `body` is missing, use `title` instead. */
-    if body == [] { body = title }
+    if body == [] { body = if title == none [] else { title } }
 
-    /*  Paint break slide body. */
-    align(br_align, text(size: br_size, fill: br_fill, body))
-    return
+    /*  Select correct brush. */
+    brush = "br"
   }
-  
-  block(body)
-  block(date)
-  block(author)
-  block(event)
 
+  theme.at(brush)(body, ..default_extras + theme.extras.at(brush))
   return
 }
 
@@ -217,36 +258,31 @@
 )
 
 
-#show slide.where(br: true): it => [
-  #set text(100pt)
-  #it.body
-]
+#slide(br: true)
+#slide(title: none, br: true)
+#slide(title: [Caca din titlu], br: true)
+#slide(title: none, br: true, body: [Caca din body])
+#slide(title: [Caca din titlu desi ambele], br: true, body: [Caca din body desi ambele])
 
-#slide(br: true)[]
-#slide(title: none, br: true)[]
-#slide(title: [Caca din titlu], br: true)[]
-#slide(title: none, br: true)[Caca din body]
-#slide(title: [Caca din titlu desi ambele], br: true)[Caca din body desi ambele]
-
-#slide(title: [Hello \ Pipi], br: (size: 80pt, fill: rgb("fae")))[
+#slide(title: [Hello \ Pipi], br: true, body: [
   #align(horizon)[
     #underline(text(size: 22pt, "Se schimba titlul"))
 
     #text(size: 20pt, fill: rgb("aac"), "sub titlu")
   ]
-]
-#slide()[1 music nver stops]
+])
+#slide(body: [1 music nver stops])
 
 #let slide = slide.with(author: "caca")
 
-#slide(title: "")[2 music nver stops]
+#slide(title: "", body: [2 music nver stops])
 
 #let slide = slide.with(author: "pipilica")
 
-#slide(title: [])[4 music nver stops]
+#slide(title: [], body: [4 music nver stops])
 
 
-#slide(title: "A new chapter", bg_color: rgb("fed"))[
+#slide(title: "A new chapter", bg_color: rgb("fed"), body: [
   Text goes here #counter(page).display()
 
   #let arr = ([1],[2],[3],[4],[5])
@@ -263,6 +299,15 @@
   #type(3em)
   #type(0.3% + 3em)
 
-]
+  #type(atatheme)
+  #type(atatheme.br)
+  #atatheme.at("br")([text])
 
-abc
+  #let func(..extras) = {
+    let extras = extras.named()
+    extras.a
+  }
+  #let func2 = func.with(a: true)
+  #func2()
+
+])
