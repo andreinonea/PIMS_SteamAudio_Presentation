@@ -4,9 +4,9 @@
   set text(
     size: if "size" in extras { extras.size } else { 42pt },
     fill: if "fill" in extras { extras.fill } else { rgb("000") },
-    font: if "font" in extras { extras.font } else { "Times New Roman" },
+    font: if "font" in extras { extras.font } else { "default" },
   )
-
+  
   align(
     if "align" in extras { extras.align } else { center + horizon },
     if body == [] [Welcome to ATA!] else [#body]
@@ -19,7 +19,7 @@
   set text(
     size: if "size" in extras { extras.size } else { 20pt },
     fill: if "fill" in extras { extras.fill } else { rgb("000") },
-    font: if "font" in extras { extras.font } else { "Times New Roman" },
+    font: if "font" in extras { extras.font } else { "default" },
   )
 
   // TODO: grid
@@ -44,7 +44,7 @@
   set text(
     size: if "size" in extras { extras.size } else { 8pt },
     fill: if "fill" in extras { extras.fill } else { rgb("000") },
-    font: if "font" in extras { extras.font } else { "Times New Roman" },
+    font: if "font" in extras { extras.font } else { "default" },
   )
 
   // TODO: numbers
@@ -61,7 +61,7 @@
   set text(
     size: if "size" in extras { extras.size } else { 12pt },
     fill: if "fill" in extras { extras.fill } else { rgb("aaa") },
-    font: if "font" in extras { extras.font } else { "Times New Roman" },
+    font: if "font" in extras { extras.font } else { "default" },
   )
 
   if body == [] [Welcome to ATA!] else [#body]
