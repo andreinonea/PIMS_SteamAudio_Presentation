@@ -9,7 +9,9 @@
   
   align(
     if "align" in extras { extras.align } else { center + horizon },
-    if body == [] [Welcome to ATA!] else [#body]
+    if body == [] [Welcome to ATA!] else {
+      if "formatter" in extras [#extras.at("formatter")(body)] else [#body]
+    }
   )
 }
 
@@ -33,9 +35,9 @@
       },
       align(horizon + right, extras.image)
     )
-  ] else [
-    #body
-  ]
+  ] else {
+    if "formatter" in extras [#extras.at("formatter")(body)] else [#body]
+  }
 }
 
 #let atatheme_footer(body, ..extras) = {
@@ -49,10 +51,10 @@
 
   // TODO: numbers
   if body == [] [
-    \@ #extras.date #extras.author #h(1fr) #extras.event #text(14pt)[*| #counter(page).display("1 / 1", both: true)*]
-  ] else [
-    #body
-  ]
+    © #extras.date #extras.author #h(1fr) #extras.event #text(fill: rgb("fff"))[*| #counter(page).display("1 / 1", both: true)*]
+  ] else {
+    if "formatter" in extras [#extras.at("formatter")(body)] else [#body]
+  }
 }
 
 #let atatheme_rest(body, ..extras) = {
@@ -64,7 +66,9 @@
     font: if "font" in extras { extras.font } else { "default" },
   )
 
-  if body == [] [Welcome to ATA!] else [#body]
+  if body == [] [Welcome to ATA!] else {
+    if "formatter" in extras [#extras.at("formatter")(body)] else [#body]
+  }
 }
 
 #let atatheme = (

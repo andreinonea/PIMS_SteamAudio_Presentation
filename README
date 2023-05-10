@@ -1,37 +1,30 @@
-#set remember_title = false
-#set pagebreak = false
+Leave it like now or add a different mode where
 
-#slide(title: "first", remember_title: true, pagebreak: true) // first until next pagebreak
-#slide() [content] // first
-#slide() [content] // first
-#slide(title: "second", remember_title: true, pagebreak: false) // overwrites first->second until next pagebreak
-#slide() [content] // second 
-#slide() [content] // second
-#slide(title: "third", remember_title: false, pagebreak: true)
-#slide(title: "third.1", ) [content] // 
-#slide() [content]
-#slide(title: "forth", remember_title: true, pagebreak: true)
-#slide() [content]
-#slide() [content]
+// MODE1
 
+#slide(title: "Steam Audio", br: true)
+#slide(title: "Ce este audierea binauriculară?", br: true)
+#let slide = slide.with(title: "Ce este audierea binauriculară?")
+#slide(body: [
+])
 
+#slide(body: [
+Asa se paredddddddddddddddddddddddddddddddddddddddddddddddddddddd \
+deadjeada e da ea d \
+deadeadeadae \
 
-_title
+Da..
+])
 
-func(title)
-{
-	if remember_title:
-		save(title)
+// MODE2
 
-	if page_break:
-		del(title)
+br: true (default)
 
-	use(gettitle())
-}
+#slide(title: "Ceva titlu", body: [
+Aici avem un body
+])
 
-
----------------
-page_break = false
-
-
-#slide(title: [Steam Audio], pagebreak: true)
+// will first make a br slide and move the body on the next normal slide, with title as title
+// if body = [], br(title)
+// if title = "" and body != [], br(body)
+// in ideea in care daca body e prea mare, oricum se creeaza un non-br slide.
