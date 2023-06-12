@@ -33,7 +33,7 @@
           #smallcaps(extras.title)
         ]
       },
-      align(horizon + right, extras.image)
+      align(horizon + right, extras.logo)
     )
   ] else {
     if "formatter" in extras [#extras.at("formatter")(body)] else [#body]
@@ -51,7 +51,7 @@
 
   // TODO: numbers
   if body == [] [
-    © #extras.date #extras.author #h(1fr) #extras.event #text(fill: rgb("fff"))[*| #counter(page).display("1 / 1", both: true)*]
+    © #extras.date #extras.author #h(1fr) #extras.event #text(fill: rgb("000"))[*| #counter(page).display("1 / 1", both: true)*]
   ] else {
     if "formatter" in extras [#extras.at("formatter")(body)] else [#body]
   }
