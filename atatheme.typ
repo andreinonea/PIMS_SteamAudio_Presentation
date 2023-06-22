@@ -1,6 +1,8 @@
 #let atatheme_br(body, ..extras) = {
   let extras = extras.named()
 
+  if "allow_empty" not in extras { extras.insert("allow_empty", false) }
+
   set text(
     size: if "size" in extras { extras.size } else { 42pt },
     fill: if "fill" in extras { extras.fill } else { rgb("000") },
@@ -9,7 +11,10 @@
   
   align(
     if "align" in extras { extras.align } else { center + horizon },
-    if body == [] [Welcome to ATA!] else {
+    if body == [] and not extras.allow_empty [Welcome to ATA!] else {
+      if extras.allow_empty {
+        pagebreak()
+      }
       if "formatter" in extras [#extras.at("formatter")(body)] else [#body]
     }
   )
@@ -43,6 +48,8 @@
 #let atatheme_footer(body, ..extras) = {
   let extras = extras.named()
 
+  if "numbers_fill" not in extras { extras.insert("numbers_fill", rgb("000")) }
+
   set text(
     size: if "size" in extras { extras.size } else { 8pt },
     fill: if "fill" in extras { extras.fill } else { rgb("000") },
@@ -51,7 +58,7 @@
 
   // TODO: numbers
   if body == [] [
-    © #extras.date #extras.author #h(1fr) #extras.event #text(fill: rgb("000"))[*| #counter(page).display("1 / 1", both: true)*]
+    © #extras.date #extras.author #h(1fr) #extras.event #text(fill: extras.numbers_fill)[*| #counter(page).display("1 / 1", both: true)*]
   ] else {
     if "formatter" in extras [#extras.at("formatter")(body)] else [#body]
   }
